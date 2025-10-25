@@ -2,7 +2,7 @@ name: WB Stocks to Supabase (every 30m)
 
 on:
   schedule:
-    - cron: "*/30 * * * *"    # каждые 30 минут
+    - cron: "*/30 * * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -37,12 +37,12 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_TABLE: wb_stocks_current
 
-          # ВКЛ/ВЫКЛ тех. строк (по умолчанию выключены)
-          EXCLUDE_TOTAL_ROW: "true"      # "false" если хочешь видеть "Всего находится на складах"
-          EXCLUDE_IN_TRANSIT: "true"     # "false" если нужны "В пути ..."
-          EXCLUDE_RETURNS: "true"        # "false" если нужны возвраты
+          # ВКЛЮЧАЕМ технические строки (если нужны — ставь "false")
+          EXCLUDE_TOTAL_ROW: "false"     # вернуть «Всего находится на складах»
+          EXCLUDE_IN_TRANSIT: "false"    # вернуть «В пути ...»
+          EXCLUDE_RETURNS: "false"       # вернуть «...возврат...»
 
-          # Тюнинг лимитов
+          # Тюнинг лимитов WB
           WB_STATUS_POLL_INTERVAL_SEC: "5"
           WB_STATUS_TIMEOUT_SEC: "600"
           WB_DOWNLOAD_COOLDOWN_SEC: "70"
