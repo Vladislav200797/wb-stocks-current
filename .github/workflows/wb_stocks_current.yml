@@ -2,13 +2,13 @@ name: WB Stocks to Supabase (every 30m)
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # каждые 30 мин
-  workflow_dispatch: {}       # возможность ручного запуска
+    - cron: "*/30 * * * *"    # каждые 30 минут
+  workflow_dispatch: {}
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -24,11 +24,28 @@ jobs:
           python -m pip install -U pip
           pip install -r requirements.txt
 
+      - name: Jitter start (0–40s)
+        run: |
+          S=$((RANDOM % 41))
+          echo "Sleeping for $S seconds to avoid API burst..."
+          sleep $S
+
       - name: Run job
         env:
-          WB_ANALYTICS_TOKEN: ${{ secrets.WB_ANALYTICS_TOKEN }}  # токен категории «Аналитика»
+          WB_ANALYTICS_TOKEN: ${{ secrets.WB_ANALYTICS_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_TABLE: wb_stocks_current
+
+          # ВКЛ/ВЫКЛ тех. строк (по умолчанию выключены)
+          EXCLUDE_TOTAL_ROW: "true"      # "false" если хочешь видеть "Всего находится на складах"
+          EXCLUDE_IN_TRANSIT: "true"     # "false" если нужны "В пути ..."
+          EXCLUDE_RETURNS: "true"        # "false" если нужны возвраты
+
+          # Тюнинг лимитов
+          WB_STATUS_POLL_INTERVAL_SEC: "5"
+          WB_STATUS_TIMEOUT_SEC: "600"
+          WB_DOWNLOAD_COOLDOWN_SEC: "70"
+          WB_DOWNLOAD_MAX_RETRIES: "8"
         run: |
           python wb_stocks_current_job.py
